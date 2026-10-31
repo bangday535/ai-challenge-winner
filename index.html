@@ -3,122 +3,176 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0b1020">
 <title>AI Challenge Winner</title>
 <style>
 *{box-sizing:border-box}
-body{margin:0;background:#0b1020;color:white;font-family:Arial,sans-serif}
-header{text-align:center;padding:35px 15px;background:linear-gradient(135deg,#18234a,#48218b)}
-h1{font-size:32px;margin:5px}
-header p{color:#d5d5f5}
-main{max-width:850px;margin:25px auto;padding:15px}
-.card{background:#151d33;border:1px solid #303b5a;border-radius:15px;padding:22px;margin-bottom:20px}
-h2{font-size:20px;color:#b9a5ff}
-input,textarea,button{width:100%;padding:13px;margin-top:10px;border-radius:9px;border:1px solid #465273;background:#0d1427;color:white}
-button{background:#7650ed;border:0;font-weight:bold;cursor:pointer}
+body{margin:0;background:#090e1c;color:#f7f7ff;font-family:Inter,Arial,sans-serif}
+header{text-align:center;padding:42px 16px 34px;background:radial-gradient(ellipse at top,#5530a8 0,#1c2450 48%,#090e1c 100%)}
+h1{font-size:clamp(26px,5vw,40px);margin:5px 0;letter-spacing:.5px}
+header p{color:#d7d5f4;margin:10px 0 0}
+main{max-width:960px;margin:24px auto;padding:0 15px}
+.card{background:#141c30;border:1px solid #2b3858;border-radius:18px;padding:22px;margin-bottom:18px;box-shadow:0 12px 35px #0002}
+h2{font-size:19px;color:#c7b5ff;margin:0 0 10px}
+p{line-height:1.55}
+textarea,input,select{width:100%;padding:13px;margin-top:9px;border-radius:10px;border:1px solid #455274;background:#0b1325;color:white;font:inherit}
+textarea{resize:vertical}
+button{padding:13px 16px;border-radius:10px;border:0;background:#7650ed;color:white;font-weight:800;cursor:pointer;font-size:14px}
 button:hover{background:#906fff}
-button:disabled{opacity:.5}
-#preview{max-width:100%;max-height:350px;display:none;margin:18px auto;border-radius:12px}
-.result{font-size:28px;font-weight:bold;color:#a994ff}
+button:disabled{opacity:.55;cursor:wait}
+.full{width:100%;margin-top:12px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin-top:16px}
+.tile{background:#0b1325;border:1px solid #34415e;border-radius:13px;padding:9px;min-width:0}
+.tile img{width:100%;aspect-ratio:1;object-fit:contain;background:#080d18;border-radius:8px;display:block}
+.tile a{display:block;color:#c9baff;text-align:center;font-size:13px;margin:10px 0 3px;text-decoration:none}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .small{font-size:13px;color:#aeb8d0;line-height:1.6}
+#status{padding:12px;background:#0b1325;border-radius:10px;margin-top:12px;color:#d9d4ff;white-space:pre-wrap}
+#preview{max-width:100%;max-height:300px;display:none;margin:16px auto;border-radius:12px}
+.result{font-size:28px;font-weight:bold;color:#a994ff}
 footer{text-align:center;color:#8994ad;padding:25px}
+@media(max-width:560px){.row{grid-template-columns:1fr}.card{padding:17px}}
 </style>
 </head>
 <body>
 <header>
 <h1>🏆 AI CHALLENGE WINNER</h1>
-<p>Studio Kreatif AI untuk Mempersiapkan Karya Terbaikmu</p>
+<p>Studio kreatif AI untuk membuat dan mengevaluasi karya terbaikmu.</p>
 </header>
-
 <main>
-<div class="card">
-<h2>🖼️ 1. Upload Gambar</h2>
-<p>Pilih gambar AI yang ingin kamu evaluasi.</p>
-<input type="file" id="file" accept="image/*">
-<img id="preview">
-<p id="info" class="small"></p>
+<section class="card">
+<h2>✨ 1. Buat Gambar dengan AI</h2>
+<p>Tulis ide gambar, pilih gaya, lalu AI akan membuat 4 variasi.</p>
+<textarea id="prompt" rows="3" placeholder="Contoh: seekor naga emas terbang di atas kota futuristik saat matahari terbenam..."></textarea>
+<div class="row">
+<div><label for="style" class="small">Gaya gambar</label><select id="style">
+<option value="cinematic digital art">Cinematic digital art</option>
+<option value="photorealistic photography">Realistis / Fotorealistik</option>
+<option value="anime illustration">Anime</option>
+<option value="3D rendered art">3D</option>
+<option value="fantasy concept art">Fantasy</option>
+<option value="science fiction concept art">Sci-fi</option>
+<option value="watercolor painting">Watercolor</option>
+<option value="professional product photography">Foto produk</option>
+<option value="oil painting">Lukisan minyak</option>
+</select></div>
+<div><label for="ratio" class="small">Rasio gambar</label><select id="ratio">
+<option value="square">Kotak (1:1)</option>
+<option value="portrait">Portrait (2:3)</option>
+<option value="landscape">Landscape (3:2)</option>
+</select></div>
 </div>
+<button id="generate" class="full">🎨 GENERATE 4 GAMBAR</button>
+<div id="status" role="status">Siap membuat gambar. Layanan gratis memakai komputer sukarelawan, jadi antrean bisa memerlukan waktu.</div>
+<div id="gallery" class="grid"></div>
+<p class="small">Gratis tanpa akun tambahan dan tanpa kartu kredit, memakai AI Horde komunitas. Karena antrean sukarelawan, proses bisa lambat atau sementara tidak tersedia. Empat gambar diminta dalam satu pekerjaan.</p>
+</section>
 
-<div class="card">
-<h2>🏆 2. Evaluasi Karya</h2>
+<section class="card">
+<h2>🖼️ 2. Upload & Evaluasi Gambar</h2>
 <p>Periksa kualitas teknis gambar sebelum mengikuti kompetisi.</p>
-<button id="evaluate" disabled>ANALISIS GAMBAR</button>
+<input type="file" id="file" accept="image/*">
+<img id="preview" alt="Pratinjau gambar yang diunggah">
+<p id="info" class="small"></p>
+<button id="evaluate" class="full" disabled>ANALISIS GAMBAR</button>
 <div id="result"></div>
-<p class="small">Penilaian ini merupakan pemeriksaan teknis otomatis, bukan penilaian AI terhadap isi atau keindahan gambar.</p>
-</div>
+<p class="small">Skor ini hanya memeriksa resolusi dan ukuran file, bukan menilai keindahan atau peluang menang.</p>
+</section>
 
-<div class="card">
-<h2>✨ 3. AI Prompt Generator</h2>
-<p>Buat ide prompt gambar yang lebih menarik.</p>
-<textarea id="idea" rows="3" placeholder="Contoh: naga emas terbang di atas kota futuristik..."></textarea>
-<button onclick="generate()">BUAT PROMPT</button>
-<textarea id="output" rows="6" placeholder="Prompt akan muncul di sini..." readonly></textarea>
-<button onclick="copyPrompt()">SALIN PROMPT</button>
-</div>
-
-<div class="card">
+<section class="card">
 <h2>💡 Tips Menang Kompetisi</h2>
 <p>✓ Gunakan konsep yang unik dan orisinal.</p>
-<p>✓ Perhatikan komposisi dan pencahayaan.</p>
+<p>✓ Perhatikan komposisi, pencahayaan, dan fokus utama.</p>
 <p>✓ Pastikan detail gambar terlihat jelas.</p>
 <p>✓ Sesuaikan karya dengan tema kompetisi.</p>
 <p>✓ Periksa aturan dan ketentuan penyelenggara.</p>
-</div>
+</section>
 </main>
-
 <footer>AI CHALLENGE WINNER © 2026</footer>
-
 <script>
+const API='https://aihorde.net/api/v2';
+const ANON_KEY='0000000000';
+const generateBtn=document.getElementById('generate');
+const statusBox=document.getElementById('status');
+const gallery=document.getElementById('gallery');
+
+function setStatus(message){statusBox.textContent=message}
+function sleep(ms){return new Promise(resolve=>setTimeout(resolve,ms))}
+function dimensions(ratio){
+ if(ratio==='portrait')return {width:512,height:768};
+ if(ratio==='landscape')return {width:768,height:512};
+ return {width:512,height:512};
+}
+async function generateImages(){
+ const raw=document.getElementById('prompt').value.trim();
+ if(!raw){alert('Tulis ide gambar dulu, bro.');return}
+ generateBtn.disabled=true;gallery.innerHTML='';
+ setStatus('Mengirim permintaan ke AI Horde...');
+ try{
+  const size=dimensions(document.getElementById('ratio').value);
+  const style=document.getElementById('style').value;
+  const payload={
+   prompt: raw+', '+style+', highly detailed, excellent composition, beautiful lighting, high quality',
+   params:{n:4,width:size.width,height:size.height,steps:20,cfg_scale:7,sampler_name:'k_euler',karras:true},
+   nsfw:false,censor_nsfw:true,shared:false,slow_workers:true
+  };
+  const response=await fetch(API+'/generate/async',{
+   method:'POST',
+   headers:{'Content-Type':'application/json','apikey':ANON_KEY,'Client-Agent':'AI-Challenge-Winner:1.0:github-pages'},
+   body:JSON.stringify(payload)
+  });
+  const data=await response.json().catch(()=>({}));
+  if(!response.ok||!data.id)throw new Error(data.message||data.error||('Server menjawab HTTP '+response.status));
+  const id=data.id;
+  setStatus('Permintaan diterima! Sedang antre untuk membuat 4 gambar. Ini bisa memakan waktu beberapa menit...');
+  let finished=false;
+  for(let attempt=0;attempt<180;attempt++){
+   await sleep(5000);
+   const checkResponse=await fetch(API+'/generate/check/'+id,{headers:{'apikey':ANON_KEY,'Client-Agent':'AI-Challenge-Winner:1.0:github-pages'}});
+   const check=await checkResponse.json().catch(()=>({}));
+   if(!checkResponse.ok)throw new Error(check.message||'Gagal memeriksa antrean.');
+   const done=Number(check.finished||0);
+   const waiting=Number(check.waiting||0);
+   setStatus('Sedang membuat gambar...\nSelesai: '+done+'/4'+(waiting?' | Antrean: '+waiting:'')+'\nMohon tunggu, jangan tutup halaman.');
+   if(done>=4){finished=true;break}
+  }
+  if(!finished)throw new Error('Proses terlalu lama. Coba lagi nanti, antrean gratis sedang padat.');
+  const resultResponse=await fetch(API+'/generate/status/'+id,{headers:{'apikey':ANON_KEY,'Client-Agent':'AI-Challenge-Winner:1.0:github-pages'}});
+  const result=await resultResponse.json().catch(()=>({}));
+  if(!resultResponse.ok||!Array.isArray(result.generations)||!result.generations.length)throw new Error('Gambar belum berhasil diambil. Silakan coba lagi.');
+  result.generations.slice(0,4).forEach((item,index)=>{
+   const tile=document.createElement('div');tile.className='tile';
+   const img=document.createElement('img');img.alt='Hasil AI '+(index+1);
+   const source=item.img||'';
+   img.src=source.startsWith('http')?source:'data:image/webp;base64,'+source;
+   const link=document.createElement('a');link.href=img.src;link.target='_blank';link.rel='noopener';link.download='ai-challenge-'+(index+1)+'.webp';link.textContent='⬇ Buka / Simpan gambar '+(index+1);
+   tile.append(img,link);gallery.append(tile);
+  });
+  setStatus('Selesai! '+Math.min(result.generations.length,4)+' gambar berhasil dibuat. Klik gambar atau tautan untuk membuka dan menyimpan.');
+ }catch(error){
+  setStatus('Belum berhasil: '+error.message+'\nLayanan ini gratis dan memakai antrean komunitas. Coba lagi beberapa saat nanti.');
+ }finally{generateBtn.disabled=false}
+}
+generateBtn.addEventListener('click',generateImages);
+
 const file=document.getElementById('file');
 const preview=document.getElementById('preview');
 const evaluate=document.getElementById('evaluate');
 let imageData=null;
-
 file.addEventListener('change',function(){
-const f=this.files[0];
-if(!f)return;
-if(!f.type.startsWith('image/'))return alert('Pilih file gambar.');
-imageData=f;
-preview.src=URL.createObjectURL(f);
-preview.style.display='block';
-preview.onload=()=>{
-document.getElementById('info').textContent=
-'Ukuran: '+preview.naturalWidth+' × '+preview.naturalHeight+
-' pixel | File: '+(f.size/1024/1024).toFixed(2)+' MB';
-};
-evaluate.disabled=false;
-document.getElementById('result').innerHTML='';
+ const f=this.files[0];if(!f)return;
+ if(!f.type.startsWith('image/')){alert('Pilih file gambar.');return}
+ imageData=f;preview.src=URL.createObjectURL(f);preview.style.display='block';
+ preview.onload=()=>{document.getElementById('info').textContent='Ukuran: '+preview.naturalWidth+' × '+preview.naturalHeight+' pixel | File: '+(f.size/1024/1024).toFixed(2)+' MB'};
+ evaluate.disabled=false;document.getElementById('result').innerHTML='';
 });
-
 evaluate.addEventListener('click',()=>{
-if(!imageData)return;
-const w=preview.naturalWidth;
-const h=preview.naturalHeight;
-let score=0;
-score+=w>=1024?30:w>=700?20:10;
-score+=h>=1024?30:h>=700?20:10;
-score+=imageData.size>=300000?20:10;
-score+=Math.min(20,Math.round((w*h)/(1024*1024)*5));
-score=Math.min(100,score);
-document.getElementById('result').innerHTML=
-'<p>Skor teknis</p><div class="result">'+score+'/100</div>'+
-'<p>'+(score>=80?'Kualitas teknis cukup baik!':score>=60?'Masih bisa ditingkatkan.':'Coba gunakan gambar dengan resolusi lebih tinggi.')+'</p>'+
-'<p class="small">Skor berdasarkan resolusi dan ukuran file. Bukan prediksi peluang menang kompetisi.</p>';
+ if(!imageData)return;
+ const w=preview.naturalWidth,h=preview.naturalHeight;let score=0;
+ score+=w>=1024?30:w>=700?20:10;score+=h>=1024?30:h>=700?20:10;
+ score+=imageData.size>=300000?20:10;score+=Math.min(20,Math.round((w*h)/(1024*1024)*5));score=Math.min(100,score);
+ document.getElementById('result').innerHTML='<p>Skor teknis</p><div class="result">'+score+'/100</div><p>'+(score>=80?'Kualitas teknis cukup baik!':score>=60?'Masih bisa ditingkatkan.':'Coba gunakan gambar dengan resolusi lebih tinggi.')+'</p>';
 });
-
-function generate(){
-const idea=document.getElementById('idea').value.trim();
-if(!idea)return alert('Masukkan ide gambar terlebih dahulu.');
-document.getElementById('output').value=
-'Create a stunning, highly detailed masterpiece of '+idea+
-', breathtaking composition, cinematic lighting, professional color grading, rich textures, intricate details, dramatic atmosphere, exceptional visual storytelling, award-winning digital art, ultra high resolution, 8K quality.';
-}
-function copyPrompt(){
-const output=document.getElementById('output');
-if(!output.value)return alert('Buat prompt terlebih dahulu.');
-output.select();
-document.execCommand('copy');
-alert('Prompt berhasil disalin!');
-}
 </script>
 </body>
 </html>
