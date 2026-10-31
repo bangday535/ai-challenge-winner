@@ -99,36 +99,64 @@ const gallery=document.getElementById('gallery');
 function setStatus(message){statusBox.textContent=message}
 function sleep(ms){return new Promise(resolve=>setTimeout(resolve,ms))}
 function dimensions(ratio){
- if(ratio==='portrait')return {width:512,height:768};
- if(ratio==='landscape')return {width:768,height:512};
- return {width:512,height:512};
+ if(ratio==='portrait')return {width:640,height:960};
+ if(ratio==='landscape')return {width:960,height:640};
+ return {width:768,height:768};
+}
+async function chooseModel(style){
+ const preferences={
+  'photorealistic photography':['realvisxl','juggernaut xl','epicrealism','sdxl'],
+  'professional product photography':['juggernaut xl','realvisxl','sdxl'],
+  'anime illustration':['animagine','pony','anything','anime'],
+  '3D rendered art':['juggernaut xl','dreamshaper xl','sdxl'],
+  'fantasy concept art':['juggernaut xl','dreamshaper xl','sdxl'],
+  'science fiction concept art':['juggernaut xl','dreamshaper xl','sdxl'],
+  'watercolor painting':['dreamshaper xl','juggernaut xl','sdxl'],
+  'oil painting':['dreamshaper xl','juggernaut xl','sdxl'],
+  'cinematic digital art':['juggernaut xl','dreamshaper xl','sdxl']
+ };
+ try{
+  const response=await fetch(API+'/status/models',{headers:{'apikey':ANON_KEY,'Client-Agent':'AI-Challenge-Winner:1.1:github-pages'}});
+  if(!response.ok)return null;
+  const models=await response.json();
+  const active=Array.isArray(models)?models.filter(m=>m&&m.name&&Number(m.count||0)>0):[];
+  for(const term of (preferences[style]||[])){
+   const match=active.find(m=>m.name.toLowerCase().includes(term));
+   if(match)return match.name;
+  }
+ }catch(e){}
+ return null;
 }
 async function generateImages(){
  const raw=document.getElementById('prompt').value.trim();
  if(!raw){alert('Tulis ide gambar dulu, bro.');return}
  generateBtn.disabled=true;gallery.innerHTML='';
- setStatus('Mengirim permintaan ke AI Horde...');
+ setStatus('Memilih model gambar yang cocok...');
  try{
   const size=dimensions(document.getElementById('ratio').value);
   const style=document.getElementById('style').value;
+  const model=await chooseModel(style);
+  const positive='Follow the user description precisely. Preserve the main subject, its quantity, attributes, action, setting, and important details. Do not substitute the subject or add unrelated objects. '+raw+'. Visual style: '+style+'. Clear focal point, balanced composition, coherent perspective, refined lighting, crisp details, professional finish.';
+  const negative='blurry, low resolution, watermark, signature, unwanted text, logo, duplicate subject, extra objects, distorted proportions, malformed details';
   const payload={
-   prompt: raw+', '+style+', highly detailed, excellent composition, beautiful lighting, high quality',
-   params:{n:4,width:size.width,height:size.height,steps:20,cfg_scale:7,sampler_name:'k_euler',karras:true},
-   nsfw:false,censor_nsfw:true,shared:false,slow_workers:true
+   prompt:positive+'###'+negative,
+   params:{n:4,width:size.width,height:size.height,steps:30,cfg_scale:7,sampler_name:'k_euler',karras:true,clip_skip:1},
+   nsfw:false,censor_nsfw:true,shared:false,slow_workers:true,
+   ...(model?{models:[model]}:{})
   };
   const response=await fetch(API+'/generate/async',{
    method:'POST',
-   headers:{'Content-Type':'application/json','apikey':ANON_KEY,'Client-Agent':'AI-Challenge-Winner:1.0:github-pages'},
+   headers:{'Content-Type':'application/json','apikey':ANON_KEY,'Client-Agent':'AI-Challenge-Winner:1.1:github-pages'},
    body:JSON.stringify(payload)
   });
   const data=await response.json().catch(()=>({}));
   if(!response.ok||!data.id)throw new Error(data.message||data.error||('Server menjawab HTTP '+response.status));
   const id=data.id;
-  setStatus('Permintaan diterima! Sedang antre untuk membuat 4 gambar. Ini bisa memakan waktu beberapa menit...');
+  setStatus('Permintaan diterima! Sedang antre membuat 4 variasi...');
   let finished=false;
   for(let attempt=0;attempt<180;attempt++){
    await sleep(5000);
-   const checkResponse=await fetch(API+'/generate/check/'+id,{headers:{'apikey':ANON_KEY,'Client-Agent':'AI-Challenge-Winner:1.0:github-pages'}});
+   const checkResponse=await fetch(API+'/generate/check/'+id,{headers:{'apikey':ANON_KEY,'Client-Agent':'AI-Challenge-Winner:1.1:github-pages'}});
    const check=await checkResponse.json().catch(()=>({}));
    if(!checkResponse.ok)throw new Error(check.message||'Gagal memeriksa antrean.');
    const done=Number(check.finished||0);
@@ -137,7 +165,7 @@ async function generateImages(){
    if(done>=4){finished=true;break}
   }
   if(!finished)throw new Error('Proses terlalu lama. Coba lagi nanti, antrean gratis sedang padat.');
-  const resultResponse=await fetch(API+'/generate/status/'+id,{headers:{'apikey':ANON_KEY,'Client-Agent':'AI-Challenge-Winner:1.0:github-pages'}});
+  const resultResponse=await fetch(API+'/generate/status/'+id,{headers:{'apikey':ANON_KEY,'Client-Agent':'AI-Challenge-Winner:1.1:github-pages'}});
   const result=await resultResponse.json().catch(()=>({}));
   if(!resultResponse.ok||!Array.isArray(result.generations)||!result.generations.length)throw new Error('Gambar belum berhasil diambil. Silakan coba lagi.');
   result.generations.slice(0,4).forEach((item,index)=>{
