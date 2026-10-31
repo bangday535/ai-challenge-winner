@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Challenge Winner</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#0b1020;color:white;font-family:Arial,sans-serif}
+header{text-align:center;padding:35px 15px;background:linear-gradient(135deg,#18234a,#48218b)}
+h1{font-size:32px;margin:5px}
+header p{color:#d5d5f5}
+main{max-width:850px;margin:25px auto;padding:15px}
+.card{background:#151d33;border:1px solid #303b5a;border-radius:15px;padding:22px;margin-bottom:20px}
+h2{font-size:20px;color:#b9a5ff}
+input,textarea,button{width:100%;padding:13px;margin-top:10px;border-radius:9px;border:1px solid #465273;background:#0d1427;color:white}
+button{background:#7650ed;border:0;font-weight:bold;cursor:pointer}
+button:hover{background:#906fff}
+button:disabled{opacity:.5}
+#preview{max-width:100%;max-height:350px;display:none;margin:18px auto;border-radius:12px}
+.result{font-size:28px;font-weight:bold;color:#a994ff}
+.small{font-size:13px;color:#aeb8d0;line-height:1.6}
+footer{text-align:center;color:#8994ad;padding:25px}
+</style>
+</head>
+<body>
+<header>
+<h1>🏆 AI CHALLENGE WINNER</h1>
+<p>Studio Kreatif AI untuk Mempersiapkan Karya Terbaikmu</p>
+</header>
+
+<main>
+<div class="card">
+<h2>🖼️ 1. Upload Gambar</h2>
+<p>Pilih gambar AI yang ingin kamu evaluasi.</p>
+<input type="file" id="file" accept="image/*">
+<img id="preview">
+<p id="info" class="small"></p>
+</div>
+
+<div class="card">
+<h2>🏆 2. Evaluasi Karya</h2>
+<p>Periksa kualitas teknis gambar sebelum mengikuti kompetisi.</p>
+<button id="evaluate" disabled>ANALISIS GAMBAR</button>
+<div id="result"></div>
+<p class="small">Penilaian ini merupakan pemeriksaan teknis otomatis, bukan penilaian AI terhadap isi atau keindahan gambar.</p>
+</div>
+
+<div class="card">
+<h2>✨ 3. AI Prompt Generator</h2>
+<p>Buat ide prompt gambar yang lebih menarik.</p>
+<textarea id="idea" rows="3" placeholder="Contoh: naga emas terbang di atas kota futuristik..."></textarea>
+<button onclick="generate()">BUAT PROMPT</button>
+<textarea id="output" rows="6" placeholder="Prompt akan muncul di sini..." readonly></textarea>
+<button onclick="copyPrompt()">SALIN PROMPT</button>
+</div>
+
+<div class="card">
+<h2>💡 Tips Menang Kompetisi</h2>
+<p>✓ Gunakan konsep yang unik dan orisinal.</p>
+<p>✓ Perhatikan komposisi dan pencahayaan.</p>
+<p>✓ Pastikan detail gambar terlihat jelas.</p>
+<p>✓ Sesuaikan karya dengan tema kompetisi.</p>
+<p>✓ Periksa aturan dan ketentuan penyelenggara.</p>
+</div>
+</main>
+
+<footer>AI CHALLENGE WINNER © 2026</footer>
+
+<script>
+const file=document.getElementById('file');
+const preview=document.getElementById('preview');
+const evaluate=document.getElementById('evaluate');
+let imageData=null;
+
+file.addEventListener('change',function(){
+const f=this.files[0];
+if(!f)return;
+if(!f.type.startsWith('image/'))return alert('Pilih file gambar.');
+imageData=f;
+preview.src=URL.createObjectURL(f);
+preview.style.display='block';
+preview.onload=()=>{
+document.getElementById('info').textContent=
+'Ukuran: '+preview.naturalWidth+' × '+preview.naturalHeight+
+' pixel | File: '+(f.size/1024/1024).toFixed(2)+' MB';
+};
+evaluate.disabled=false;
+document.getElementById('result').innerHTML='';
+});
+
+evaluate.addEventListener('click',()=>{
+if(!imageData)return;
+const w=preview.naturalWidth;
+const h=preview.naturalHeight;
+let score=0;
+score+=w>=1024?30:w>=700?20:10;
+score+=h>=1024?30:h>=700?20:10;
+score+=imageData.size>=300000?20:10;
+score+=Math.min(20,Math.round((w*h)/(1024*1024)*5));
+score=Math.min(100,score);
+document.getElementById('result').innerHTML=
+'<p>Skor teknis</p><div class="result">'+score+'/100</div>'+
+'<p>'+(score>=80?'Kualitas teknis cukup baik!':score>=60?'Masih bisa ditingkatkan.':'Coba gunakan gambar dengan resolusi lebih tinggi.')+'</p>'+
+'<p class="small">Skor berdasarkan resolusi dan ukuran file. Bukan prediksi peluang menang kompetisi.</p>';
+});
+
+function generate(){
+const idea=document.getElementById('idea').value.trim();
+if(!idea)return alert('Masukkan ide gambar terlebih dahulu.');
+document.getElementById('output').value=
+'Create a stunning, highly detailed masterpiece of '+idea+
+', breathtaking composition, cinematic lighting, professional color grading, rich textures, intricate details, dramatic atmosphere, exceptional visual storytelling, award-winning digital art, ultra high resolution, 8K quality.';
+}
+function copyPrompt(){
+const output=document.getElementById('output');
+if(!output.value)return alert('Buat prompt terlebih dahulu.');
+output.select();
+document.execCommand('copy');
+alert('Prompt berhasil disalin!');
+}
+</script>
+</body>
+</html>
